@@ -6,7 +6,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="ticket-automaton-eai" />
+        <module name="route-system" />
+        <module name="pricing-system" />
+        <module name="messaging-system" />
+        <module name="document-system" />
+        <module name="printing-system" />
+        <module name="assembly-line" />
+        <module name="ui-system" />
       </profile>
     </annotationProcessing>
   </component>
