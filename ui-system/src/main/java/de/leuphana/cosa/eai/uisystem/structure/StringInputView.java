@@ -30,6 +30,7 @@ public abstract class StringInputView extends View {
      * @return the selected integer value
      */
     private String readStringInput() {
+        System.out.print(inputPrefix);
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         while (true) {
@@ -44,7 +45,7 @@ public abstract class StringInputView extends View {
             if (!isValidString(enteredString)) {
                 // input String is not valid
                 System.out.println(getValidationMessage());
-//                System.out.print(inputPrefix);
+                System.out.print(inputPrefix);
                 continue;
             }
 

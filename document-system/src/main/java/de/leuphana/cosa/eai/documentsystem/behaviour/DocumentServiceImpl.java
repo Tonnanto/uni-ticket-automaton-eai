@@ -47,7 +47,7 @@ public class DocumentServiceImpl implements DocumentService {
      * Triggers an event with the "DOCUMENT_CREATED_TOPIC" topic once the document is printed.
      */
     @Override
-    public void createDocument(Documentable documentable) {
+    public TicketDocumentTemplate createDocument(Documentable documentable) {
 
         // Show overview and get user confirmation
         if (confirmTicket(documentable)) {
@@ -67,7 +67,9 @@ public class DocumentServiceImpl implements DocumentService {
 //            } else {
 //                System.out.println("EventAdmin not found: Event could not be triggered: " + DOCUMENT_CREATED_TOPIC);
 //            }
+            return ticketDocumentTemplate;
         }
+        return null;
     }
 
     public TicketDocumentTemplate createTicketDocument(Documentable documentable) {

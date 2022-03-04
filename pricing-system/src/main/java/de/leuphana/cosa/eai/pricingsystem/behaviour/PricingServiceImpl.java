@@ -37,7 +37,7 @@ public class PricingServiceImpl implements PricingService {
      * Creates a price object based on the price rate selected by the user.
      * Triggers an event with the "PRICE_DETERMINED_TOPIC" topic once the price is determined.
      */
-    public void selectPriceRate(Pricable pricable) {
+    public Price selectPriceRate(Pricable pricable) {
 
         // Let user select price rate
         PriceRate priceRate = selectPriceRate(Arrays.stream(PriceRate.values()).toList(), pricable);
@@ -55,6 +55,7 @@ public class PricingServiceImpl implements PricingService {
 //        } else {
 //            System.out.println("EventAdmin not found: Event could not be triggered: " + PRICE_DETERMINED_TOPIC);
 //        }
+        return price;
     }
 
     /**

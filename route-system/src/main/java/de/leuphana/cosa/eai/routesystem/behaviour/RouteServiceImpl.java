@@ -49,8 +49,7 @@ public class RouteServiceImpl implements RouteService {
      * Creates a route object based on the locations selected by the user.
      * Triggers an event with the "ROUTE_CREATED_TOPIC" topic once the route is created.
      */
-    public void selectRoute() {
-
+    public Route selectRoute() {
         // Let user select start location
         Location startLocation = selectStartLocation(locations);
 
@@ -71,6 +70,7 @@ public class RouteServiceImpl implements RouteService {
 //        } else {
 //            System.out.println("EventAdmin not found: Event could not be triggered: " + ROUTE_CREATED_TOPIC);
 //        }
+        return route;
     }
 
     /**

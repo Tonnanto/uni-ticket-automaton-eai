@@ -53,6 +53,7 @@ public abstract class SelectionView extends View {
      */
     private int readIntInput() {
 
+        System.out.print(inputPrefix);
         Scanner scanner = new Scanner(System.in);
         long optionCount = getOptions().size();
 
@@ -60,7 +61,7 @@ public abstract class SelectionView extends View {
             if (!scanner.hasNextInt()) {
                 // input is not a number
                 System.out.println("Bitte geben Sie eine Zahl zwischen 1 und " + optionCount + " ein");
-//                System.out.print(inputPrefix);
+                System.out.print(inputPrefix);
                 scanner.next();
                 continue;
             }
@@ -70,7 +71,7 @@ public abstract class SelectionView extends View {
             if (enteredNumber <= 0 || enteredNumber > optionCount) {
                 // input number is out of valid range
                 System.out.println("Bitte geben Sie eine Zahl zwischen 1 und " + optionCount + " ein");
-//                System.out.print(inputPrefix);
+                System.out.print(inputPrefix);
                 continue;
             }
 

@@ -20,4 +20,13 @@ public class Price {
     public double calculatePrice() {
         return pricable.getAmount() * 0.03 * 1.45 * priceRate.priceMultiplier();
     }
+
+    @Override
+    public String toString() {
+        return "Price{" +
+                "pricable=" + pricable.getName() +
+                ", priceRate=" + priceRate +
+                ", price=" + calculatePrice() +
+                '}';
+    }
 }

@@ -1,5 +1,6 @@
 package de.leuphana.cosa.eai.printingsystem.behaviour.service;
 
+import de.leuphana.cosa.eai.printingsystem.structure.PrintReport;
 import de.leuphana.cosa.eai.printingsystem.structure.Printable;
 
 public interface PrintingService {

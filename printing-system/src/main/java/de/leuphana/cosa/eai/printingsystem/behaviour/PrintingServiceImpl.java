@@ -64,6 +64,7 @@ public class PrintingServiceImpl implements PrintingService {
 //        } else {
 //            System.out.println("EventAdmin not found: Event could not be triggered: " + PRINT_REPORT_CREATED_TOPIC);
 //        }
+//        return printReport;
     }
 
 
