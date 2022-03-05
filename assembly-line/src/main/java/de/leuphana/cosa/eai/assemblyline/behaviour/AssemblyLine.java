@@ -7,18 +7,25 @@ import de.leuphana.cosa.eai.assemblyline.behaviour.adapter.PrintReportToSendable
 import de.leuphana.cosa.eai.assemblyline.behaviour.adapter.RouteToPricableAdapter;
 import de.leuphana.cosa.eai.documentsystem.behaviour.DocumentServiceImpl;
 import de.leuphana.cosa.eai.documentsystem.behaviour.service.DocumentService;
+import de.leuphana.cosa.eai.documentsystem.structure.Documentable;
 import de.leuphana.cosa.eai.messagingsystem.behaviour.MessagingServiceImpl;
 import de.leuphana.cosa.eai.messagingsystem.behaviour.service.MessagingService;
+import de.leuphana.cosa.eai.messagingsystem.structure.DeliveryReport;
 import de.leuphana.cosa.eai.pricingsystem.behaviour.PricingServiceImpl;
 import de.leuphana.cosa.eai.pricingsystem.behaviour.service.PricingService;
 import de.leuphana.cosa.eai.printingsystem.behaviour.PrintingServiceImpl;
 import de.leuphana.cosa.eai.printingsystem.behaviour.service.PrintingService;
+import de.leuphana.cosa.eai.printingsystem.structure.PrintReport;
 import de.leuphana.cosa.eai.routesystem.behaviour.RouteServiceImpl;
 import de.leuphana.cosa.eai.routesystem.behaviour.service.RouteService;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class AssemblyLine {
 
@@ -37,6 +44,8 @@ public class AssemblyLine {
     private BookingDetailToDocumentableAdapter bookingDetailToDocumentableAdapter;
     private DocumentToPrintableAdapter documentToPrintableAdapter;
     private PrintReportToSendableAdapter printReportToSendableAdapter;
+
+    private String logLine;
 
     public AssemblyLine() {
         setUp();
@@ -81,41 +90,50 @@ public class AssemblyLine {
 
                 from("direct:start")
                         .bean(routeService, "selectRoute")
-                        .log("Selected Route: " + body().toString())
-                        .to("direct:aggregateBookingDetails")
-                        .to("direct:getPrice")
-                        .to("direct:aggregateBookingDetails")
-//                        .log("Documentable: " + body().toString())
-//                        .to("direct:createDocument")
-//                        .multicast().parallelProcessing()
-//                            .to("direct:getPrice", "direct:aggregateBookingDetails")
-//                            .end()
+                        .multicast().parallelProcessing()
+                            .bean(bookingDetailToDocumentableAdapter, "onRouteCreated")
+                            .to("direct:getPrice")
+                        .end()
                         ;
 
-                from("direct:aggregateBookingDetails")
-                        .aggregate(constant(true), bookingDetailToDocumentableAdapter).completionSize(2)
-                        .to("direct:createDocument")
-                        .log("Documentable: " + body().toString())
-                        ;
+//                from("direct:aggregateBookingDetails")
+//                        .aggregate(constant(true), bookingDetailToDocumentableAdapter)
+//                            .completionSize(1)
+//                        .log(body().toString())
+//                        .choice()
+//                            .when(body().isNull())
+//                                .to("direct:createDocument")
+//                        .end()
+//                        ;
 
                 from("direct:getPrice")
                         .bean(routeToPricableAdapter, "onRouteCreated")
                         .bean(pricingService, "selectPriceRate")
-                        .log("Selected Price: " + body().toString())
-//                        .to("direct:aggregateBookingDetails")
+                        .bean(bookingDetailToDocumentableAdapter, "onPriceDetermined")
+                        .choice()
+                            .when(body().isInstanceOf(Documentable.class))
+                                .to("direct:createDocument")
+                        .end()
                         ;
 
                 from("direct:createDocument")
-                            .pipeline()
-                                .bean(documentService, "createDocument") // TODO handle unsuccessful confirmation
-                                .bean(documentToPrintableAdapter, "onDocumentCreated")
-                                .bean(printingService, "printPrintable")
-                                .log("Print report: " + body().toString())
-                                .end()
-//                            .bean(printReportToSendableAdapter, "")
-//                            .bean(messagingService, "sendMessage")
+                        .pipeline()
+                            .process(routeInfoLogger())
+                            .bean(documentService, "createDocument").choice()
+                                .when(body().isNull()).to("direct:start")
+                                .otherwise()
+                                    .bean(printReportToSendableAdapter, "onDocumentCreated")
+                                    .bean(documentToPrintableAdapter, "onDocumentCreated")
+                                    .bean(printingService, "printPrintable")
+                                    .process(isPrintedLogger())
+                                    .bean(printReportToSendableAdapter, "onDocumentPrinted")
+                                    .bean(messagingService, "sendMessage")
+                                    .process(isMessageSentLogger())
+                                    .process(exchange -> exchange.getIn().setBody(logLine))
+                                    .to("file:src/main/resources/?fileName=orders.log&fileExist=Append")
+                            .end()
+                        .end()
                         ;
-
             }
         };
 
@@ -124,5 +142,36 @@ public class AssemblyLine {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // Logging Processors
+    private Processor routeInfoLogger() {
+        return exchange -> {
+            if (exchange.getIn().getBody() instanceof Documentable documentable) {
+                logLine = "\n" + new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(new Date()) +
+                        " - " + documentable.getName() + "; " +
+                        documentable.getBody().replace("\n", "; ");
+            }
+        };
+    }
+
+    private Processor isPrintedLogger() {
+        return exchange -> {
+            if (exchange.getIn().getBody() instanceof PrintReport printReport) {
+                logLine += printReport.isPrinted() ? " isPrinted = TRUE" : " isPrinted = FALSE";
+            }
+        };
+    }
+
+    private Processor isMessageSentLogger() {
+        return exchange -> {
+            if (exchange.getIn().getBody() instanceof DeliveryReport deliveryReport &&
+                    deliveryReport.getMessageType() != null &&
+                    !deliveryReport.getMessageType().isEmpty()) {
+                logLine += "; Message sent via " + deliveryReport.getMessageType();
+                return;
+            }
+            logLine += "; No message sent";
+        };
     }
 }

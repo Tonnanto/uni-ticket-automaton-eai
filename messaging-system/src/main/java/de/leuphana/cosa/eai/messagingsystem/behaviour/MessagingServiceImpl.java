@@ -16,30 +16,41 @@ import java.util.List;
 
 public class MessagingServiceImpl implements MessagingService {
 
-//    @Override
-//    public void start(BundleContext bundleContext) {
-//        System.out.println("Registering MessagingService.");
-//        registration = bundleContext.registerService(
-//                MessagingService.class,
-//                this,
-//                new Hashtable<String, String>());
-//        reference = registration
-//                .getReference();
-//
-//        loggerFactoryTracker = new ServiceTracker(bundleContext, LoggerFactory.class.getName(), null);
-//        loggerFactoryTracker.open();
-//
-//    }
-//
-//    @Override
-//    public void stop(BundleContext bundleContext) {
-//        System.out.println("Unregistering MessagingService.");
-//        registration.unregister();
-//    }
+    @Override
+    public DeliveryReport sendMessage(Sendable sendable) {
 
-	@Override
-	public DeliveryReport sendMessage(Sendable sendable) {
+        MessageType messageType = selectMessageType();
+        String receiver = enterReceiver(messageType);
+        String sender = messageType == MessageType.SMS ? "0152242069" : "ticket@automat.de";
 
+        if (messageType != null) {
+            AbstractMessagingFactory abstractMessagingFactory = AbstractMessagingFactory.getFactory(messageType);
+            Message message = abstractMessagingFactory.createMessage(sender, receiver, sendable.getContent());
+            MessagingProtocol messageProtocol = abstractMessagingFactory.createMessagingProtocol();
+            messageProtocol.open();
+            messageProtocol.transfer(message);
+            View view = new View() {
+                @Override
+                protected String getMessage() {
+                    return "Sending ...";
+                }
+            };
+            view.display();
+            messageProtocol.close();
+
+            DeliveryReport deliveryReport = new DeliveryReport();
+            deliveryReport.setSender(sender);
+            deliveryReport.setReceiver(receiver);
+            deliveryReport.setContent(sendable.getContent());
+            deliveryReport.setMessageType(messageType.toString());
+
+            return deliveryReport;
+        } else {
+            return null;
+        }
+    }
+
+    private MessageType selectMessageType() {
         SelectionView selectionView = new SelectionView() {
             @Override
             protected List<String> getOptions() {
@@ -55,104 +66,58 @@ public class MessagingServiceImpl implements MessagingService {
                 return "Möchten Sie eine Quittung zugestellt bekommen?";
             }
         };
+
         int selectedIndex = selectionView.displaySelection();
-        if (selectedIndex != 0) {
-            switch (selectedIndex) {
-                case 1:
-                    sendable.setMessageType(MessageType.EMAIL);
-                    sendable.setSender("ticket@automat.de");
-                    StringInputView stringView = new StringInputView() {
-                        @Override
-                        protected String getMessage() {
-                            return "Geben Sie ihre E-Mail Adresse ein: ";
-                        }
 
-                        @Override
-                        protected boolean isValidString(String s) {
-                            return super.isValidString(s); // TODO: email validation?
-                        }
-
-                        @Override
-                        protected String getValidationMessage() {
-                            return "Bitte geben Sie eine gültige Email Adresse ein";
-                        }
-                    };
-                    sendable.setReceiver(stringView.displayStringInput());
-                    break;
-                case 2:
-                    sendable.setMessageType(MessageType.SMS);
-                    sendable.setSender("0152242069");
-                    stringView = new StringInputView() {
-                        @Override
-                        protected String getMessage() {
-                            return "Geben Sie ihre Handynummer ein: ";
-                        }
-
-                        @Override
-                        protected boolean isValidString(String s) {
-                            return super.isValidString(s); // TODO: email validation?
-                        }
-
-                        @Override
-                        protected String getValidationMessage() {
-                            return "Bitte geben Sie eine gültige Handynummer ein";
-                        }
-                    };
-                    sendable.setReceiver(stringView.displayStringInput());
-                    break;
-                default:
-                    break;
-            }
-            AbstractMessagingFactory abstractMessagingFactory = AbstractMessagingFactory.getFactory(sendable.getMessageType());
-
-            Message message = abstractMessagingFactory.createMessage(sendable.getSender(), sendable.getReceiver(), sendable.getContent());
-
-            MessagingProtocol messageProtocol = abstractMessagingFactory.createMessagingProtocol();
-            messageProtocol.open();
-            messageProtocol.transfer(message);
-            View view = new View() {
-                @Override
-                protected String getMessage() {
-                    return "Sending ...";
-                }
-            };
-            view.display();
-            messageProtocol.close();
-
-//            logMessageStatus(sendable.getMessageType());
-
-            DeliveryReport deliveryReport = new DeliveryReport();
-            deliveryReport.setSender(sendable.getSender());
-            deliveryReport.setReceiver(sendable.getReceiver());
-            deliveryReport.setContent(sendable.getContent());
-            deliveryReport.setMessageType(sendable.getMessageType().toString());
-
-//		for (MessagingEventListener listener: listeners) {
-//			listener.onMessageSent(new MessagingEvent(deliveryReport));
-//		}
-
-            return deliveryReport;
-        } else {
-//            logMessageStatus(null);
-            return null;
-        }
+        if (selectedIndex == 1)
+            return MessageType.EMAIL;
+        if (selectedIndex == 2)
+            return MessageType.SMS;
+        return null;
     }
 
-    // Sends log to the CSB with messaging status (Email, SMS, None)
-//    private void logMessageStatus(MessageType messageType) {
-//        LoggerFactory loggerFactory = (LoggerFactory) loggerFactoryTracker.getService();
-//
-//        String logMessage = "no message sent";
-//        if (messageType == MessageType.EMAIL)
-//            logMessage = "Email sent";
-//        if (messageType == MessageType.SMS)
-//            logMessage = "SMS sent";
-//
-//        if (loggerFactory != null) {
-//            Logger logger = loggerFactory.getLogger("Orders");
-//            logger.audit("; " + logMessage);
-//        } else {
-//            System.out.println("LoggerFactory not found: logger could not be triggered: " + this.getClass());
-//        }
-//    }
+    private String enterReceiver(MessageType messageType) {
+        if (messageType == null) return null;
+
+        StringInputView view = null;
+        if (messageType == MessageType.EMAIL) {
+            view = new StringInputView() {
+                @Override
+                protected String getMessage() {
+                    return "Geben Sie ihre E-Mail Adresse ein: ";
+                }
+
+                @Override
+                protected boolean isValidString(String s) {
+                    return s.contains("@") && s.contains(".");
+                }
+
+                @Override
+                protected String getValidationMessage() {
+                    return "Bitte geben Sie eine gültige Email Adresse ein";
+                }
+            };
+
+        } else if (messageType == MessageType.SMS) {
+            view = new StringInputView() {
+                @Override
+                protected String getMessage() {
+                    return "Geben Sie ihre Handynummer ein: ";
+                }
+
+                @Override
+                protected boolean isValidString(String s) {
+                    return s.matches("[0-9]+");
+                }
+
+                @Override
+                protected String getValidationMessage() {
+                    return "Bitte geben Sie eine gültige Handynummer ein";
+                }
+            };
+        }
+
+        if (view == null) return null;
+        return view.displayStringInput();
+    }
 }

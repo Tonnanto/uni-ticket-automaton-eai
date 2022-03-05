@@ -15,7 +15,7 @@ public class DocumentToPrintableAdapter {
 
     public Printable onDocumentCreated(TicketDocumentTemplate document) {
         // convert Document to Printable
-        Printable printable = new Printable() {
+        return new Printable() {
             @Override
             public String getTitle() {
                 return document.getName();
@@ -26,10 +26,6 @@ public class DocumentToPrintableAdapter {
                 return document.getDocument().lines().toList();
             }
         };
-
-        return printable;
-        // hand to printingService
-//        printingService.printPrintable(printable);
     }
 
 }
