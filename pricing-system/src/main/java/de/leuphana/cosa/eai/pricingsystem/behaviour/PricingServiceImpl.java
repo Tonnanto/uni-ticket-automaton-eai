@@ -12,30 +12,9 @@ import java.util.stream.Collectors;
 
 public class PricingServiceImpl implements PricingService {
 
-//    @Override
-//    public void start(BundleContext bundleContext) {
-//        System.out.println("Registering PricingService.");
-//        registration = bundleContext.registerService(
-//                PricingService.class,
-//                this,
-//                new Hashtable<String, String>());
-//        reference = registration
-//                .getReference();
-//
-//        eventAdminTracker = new ServiceTracker(bundleContext, EventAdmin.class.getName(), null);
-//        eventAdminTracker.open();
-//    }
-//
-//    @Override
-//    public void stop(BundleContext bundleContext) {
-//        System.out.println("Unregistering PricingService.");
-//        registration.unregister();
-//    }
-
     /**
      * Use Case: Select Price Rate
      * Creates a price object based on the price rate selected by the user.
-     * Triggers an event with the "PRICE_DETERMINED_TOPIC" topic once the price is determined.
      */
     public Price selectPriceRate(Pricable pricable) {
 
@@ -43,23 +22,12 @@ public class PricingServiceImpl implements PricingService {
         PriceRate priceRate = selectPriceRate(Arrays.stream(PriceRate.values()).toList(), pricable);
 
         // Calculate price
-        Price price = new Price(pricable, priceRate);
-
-        // TODO: trigger event (PRICE_DETERMINED_TOPIC)
-//        EventAdmin eventAdmin = (EventAdmin) eventAdminTracker.getService();
-//
-//        if (eventAdmin != null) {
-//            Dictionary<String, Object> content = new Hashtable<>();
-//            content.put(PRICE_KEY, price);
-//            eventAdmin.sendEvent(new Event(PRICE_DETERMINED_TOPIC, content));
-//        } else {
-//            System.out.println("EventAdmin not found: Event could not be triggered: " + PRICE_DETERMINED_TOPIC);
-//        }
-        return price;
+        return new Price(pricable, priceRate);
     }
 
     /**
      * Prompts the user to select a price rate
+     *
      * @param priceRates the price rates the user can choose from
      * @return the selected price rate
      */

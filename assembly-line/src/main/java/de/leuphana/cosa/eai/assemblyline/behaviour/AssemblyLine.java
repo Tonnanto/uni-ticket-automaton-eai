@@ -158,7 +158,7 @@ public class AssemblyLine {
     private Processor isPrintedLogger() {
         return exchange -> {
             if (exchange.getIn().getBody() instanceof PrintReport printReport) {
-                logLine += printReport.isPrinted() ? " isPrinted = TRUE" : " isPrinted = FALSE";
+                logLine += printReport.isPrinted() ? "; isPrinted = TRUE" : "; isPrinted = FALSE";
             }
         };
     }

@@ -4,8 +4,8 @@ import de.leuphana.cosa.eai.messagingsystem.structure.communicationpartner.Recei
 import de.leuphana.cosa.eai.messagingsystem.structure.communicationpartner.Sender;
 
 public class MessageHeader {
-	private Sender sender;
-	private Receiver receiver;
+	private final Sender sender;
+	private final Receiver receiver;
 	
 	public MessageHeader(Sender sender, Receiver receiver) {
 		this.receiver = receiver;

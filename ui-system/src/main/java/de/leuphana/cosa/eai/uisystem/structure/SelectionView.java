@@ -36,7 +36,7 @@ public abstract class SelectionView extends View {
 //        getFilteredCommands().get(inputInteger - 1).execute();
     }
 
-//    /**
+    //    /**
 //     * Override this method to decide which commands should be available to the user when this view gets displayed.
 //     * Add null to the list to add an empty line between commands.
 //     *

@@ -24,30 +24,9 @@ public class RouteServiceImpl implements RouteService {
         }
     }
 
-//    @Override
-//    public void start(BundleContext bundleContext) {
-//        System.out.println("Registering RouteService.");
-//        registration = bundleContext.registerService(
-//                RouteService.class,
-//                this,
-//                new Hashtable<String, String>());
-//        reference = registration.getReference();
-//
-//        eventAdminTracker = new ServiceTracker(bundleContext, EventAdmin.class.getName(), null);
-//        eventAdminTracker.open();
-//    }
-//
-//    @Override
-//    public void stop(BundleContext bundleContext) {
-//        System.out.println("Unregistering RouteService.");
-//        registration.unregister();
-//        eventAdminTracker.close();
-//    }
-
     /**
      * Use Case: Select Route
      * Creates a route object based on the locations selected by the user.
-     * Triggers an event with the "ROUTE_CREATED_TOPIC" topic once the route is created.
      */
     public Route selectRoute() {
         // Let user select start location
@@ -58,23 +37,12 @@ public class RouteServiceImpl implements RouteService {
         Location endLocation = selectEndLocation(endLocations);
 
         // Create route
-        Route route = createRoute(startLocation, endLocation);
-
-        // TODO: Trigger event
-//        EventAdmin eventAdmin = (EventAdmin) eventAdminTracker.getService();
-//
-//        if (eventAdmin != null) {
-//            Dictionary<String, Object> content = new Hashtable<>();
-//            content.put(ROUTE_KEY, route);
-//            eventAdmin.sendEvent(new Event(ROUTE_CREATED_TOPIC, content));
-//        } else {
-//            System.out.println("EventAdmin not found: Event could not be triggered: " + ROUTE_CREATED_TOPIC);
-//        }
-        return route;
+        return createRoute(startLocation, endLocation);
     }
 
     /**
      * Prompts the user to select a start location
+     *
      * @param startLocations the start locations the user can choose from
      * @return the selected start location
      */
@@ -98,6 +66,7 @@ public class RouteServiceImpl implements RouteService {
 
     /**
      * Prompts the user to select a end location
+     *
      * @param endLocations the end locations the user can choose from
      * @return the selected end location
      */
@@ -133,15 +102,16 @@ public class RouteServiceImpl implements RouteService {
 
     /**
      * Calculates the distance between two Locations (Coordinates) in km.
+     *
      * @param startLocation 1. location
-     * @param endLocation 2. location
+     * @param endLocation   2. location
      * @return distance in km
      */
     private double calculateDistance(Location startLocation, Location endLocation) {
 
         double startLat = startLocation.getLatitude();
         double startLong = startLocation.getLongitude();
-        
+
         double endLat = endLocation.getLatitude();
         double endLong = endLocation.getLongitude();
 
@@ -160,6 +130,7 @@ public class RouteServiceImpl implements RouteService {
 
     /**
      * Reads and parses location data from locations.json file
+     *
      * @return list of parsed locations
      * @throws IOException Thrown if the file was not found
      */

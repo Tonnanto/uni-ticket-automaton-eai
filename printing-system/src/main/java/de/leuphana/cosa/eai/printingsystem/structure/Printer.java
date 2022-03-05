@@ -9,7 +9,7 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 public class Printer {
-	private Queue<PrintJob> printJobQueue;
+	private final Queue<PrintJob> printJobQueue;
 	private ColorType colorType;
 	
 	public Printer() {
