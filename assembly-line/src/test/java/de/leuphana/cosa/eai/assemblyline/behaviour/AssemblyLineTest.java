@@ -13,8 +13,8 @@ public class AssemblyLineTest {
     }
 
     @Test
-    protected void canTicketBeBooked() {
-        assemblyLine.start();
+    protected void canRoutesBeCreated() {
+
     }
 
 }

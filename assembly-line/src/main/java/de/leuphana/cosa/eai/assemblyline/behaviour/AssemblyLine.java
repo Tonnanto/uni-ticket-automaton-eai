@@ -90,8 +90,9 @@ public class AssemblyLine {
 
                 from("direct:start")
                         .bean(routeService, "selectRoute")
+                        // RECIPIENT LIST
                         .multicast().parallelProcessing()
-                            .bean(bookingDetailToDocumentableAdapter, "onRouteCreated")
+                            .bean(bookingDetailToDocumentableAdapter, "onRouteCreated") // (AGGREGATOR)
                             .to("direct:getPrice")
                         .end()
                         ;
@@ -107,9 +108,11 @@ public class AssemblyLine {
 //                        ;
 
                 from("direct:getPrice")
+                        // (PIPELINE)
                         .bean(routeToPricableAdapter, "onRouteCreated")
                         .bean(pricingService, "selectPriceRate")
-                        .bean(bookingDetailToDocumentableAdapter, "onPriceDetermined")
+                        .bean(bookingDetailToDocumentableAdapter, "onPriceDetermined") // (AGGREGATOR)
+                        // ROUTER
                         .choice()
                             .when(body().isInstanceOf(Documentable.class))
                                 .to("direct:createDocument")
@@ -117,20 +120,25 @@ public class AssemblyLine {
                         ;
 
                 from("direct:createDocument")
+                        // PIPELINE
                         .pipeline()
                             .process(routeInfoLogger())
-                            .bean(documentService, "createDocument").choice()
+                            .bean(documentService, "createDocument")
+                                // ROUTER
+                                .choice()
                                 .when(body().isNull()).to("direct:start")
                                 .otherwise()
-                                    .bean(printReportToSendableAdapter, "onDocumentCreated")
-                                    .bean(documentToPrintableAdapter, "onDocumentCreated")
-                                    .bean(printingService, "printPrintable")
-                                    .process(isPrintedLogger())
-                                    .bean(printReportToSendableAdapter, "onDocumentPrinted")
-                                    .bean(messagingService, "sendMessage")
-                                    .process(isMessageSentLogger())
-                                    .process(exchange -> exchange.getIn().setBody(logLine))
-                                    .to("file:src/main/resources/?fileName=orders.log&fileExist=Append")
+                                    // PIPELINE
+                                    .pipeline()
+                                        .bean(printReportToSendableAdapter, "onDocumentCreated")
+                                        .bean(documentToPrintableAdapter, "onDocumentCreated")
+                                        .bean(printingService, "printPrintable")
+                                        .process(isPrintedLogger())
+                                        .bean(printReportToSendableAdapter, "onDocumentPrinted")
+                                        .bean(messagingService, "sendMessage")
+                                        .process(isMessageSentLogger())
+                                        .process(exchange -> exchange.getIn().setBody(logLine))
+                                        .to("file:src/main/resources/?fileName=orders.log&fileExist=Append")
                             .end()
                         .end()
                         ;
