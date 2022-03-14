@@ -15,35 +15,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MessagingServiceImpl implements MessagingService {
+    private MessageType messageType;
+    private String receiver;
+    private String sender;
 
     @Override
     public DeliveryReport sendMessage(Sendable sendable) {
 
-        MessageType messageType = selectMessageType();
-        String receiver = enterReceiver(messageType);
-        String sender = messageType == MessageType.SMS ? "0152242069" : "ticket@automat.de";
+        messageType = selectMessageType();
+        receiver = enterReceiver(messageType);
+        sender = messageType == MessageType.SMS ? "0152242069" : "ticket@automat.de";
 
         if (messageType != null) {
-            AbstractMessagingFactory abstractMessagingFactory = AbstractMessagingFactory.getFactory(messageType);
-            Message message = abstractMessagingFactory.createMessage(sender, receiver, sendable.getContent());
-            MessagingProtocol messageProtocol = abstractMessagingFactory.createMessagingProtocol();
-            messageProtocol.open();
-            messageProtocol.transfer(message);
-            View view = new View() {
-                @Override
-                protected String getMessage() {
-                    return "Sending ...";
-                }
-            };
-            view.display();
-            messageProtocol.close();
-
-            DeliveryReport deliveryReport = new DeliveryReport();
-            deliveryReport.setSender(sender);
-            deliveryReport.setReceiver(receiver);
-            deliveryReport.setContent(sendable.getContent());
-            deliveryReport.setMessageType(messageType.toString());
-
+            DeliveryReport deliveryReport = sendingMessage(sendable);
             return deliveryReport;
         } else {
             return null;
@@ -119,5 +103,43 @@ public class MessagingServiceImpl implements MessagingService {
 
         if (view == null) return null;
         return view.displayStringInput();
+    }
+
+    public DeliveryReport sendingMessage(Sendable sendable) {
+        AbstractMessagingFactory abstractMessagingFactory = AbstractMessagingFactory.getFactory(messageType);
+        Message message = abstractMessagingFactory.createMessage(sender, receiver, sendable.getContent());
+        MessagingProtocol messageProtocol = abstractMessagingFactory.createMessagingProtocol();
+        messageProtocol.open();
+        messageProtocol.transfer(message);
+        View view = new View() {
+            @Override
+            protected String getMessage() {
+                return "Sending ...";
+            }
+        };
+        view.display();
+        messageProtocol.close();
+
+
+        DeliveryReport deliveryReport = new DeliveryReport();
+        deliveryReport.setSender(sender);
+        deliveryReport.setReceiver(receiver);
+        deliveryReport.setContent(sendable.getContent());
+        deliveryReport.setMessageType(messageType.toString());
+
+        return deliveryReport;
+    }
+
+    //nötig für Test
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
     }
 }
