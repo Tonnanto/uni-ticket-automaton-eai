@@ -30,20 +30,20 @@ import java.util.Date;
 public class AssemblyLine {
 
     // Context
-    private CamelContext context;
+    protected CamelContext context;
 
     // Filter
-    private RouteService routeService;
-    private PricingService pricingService;
-    private DocumentService documentService;
-    private PrintingService printingService;
-    private MessagingService messagingService;
+    protected RouteService routeService;
+    protected PricingService pricingService;
+    protected DocumentService documentService;
+    protected PrintingService printingService;
+    protected MessagingService messagingService;
 
     // Pipes
-    private RouteToPricableAdapter routeToPricableAdapter;
-    private BookingDetailToDocumentableAdapter bookingDetailToDocumentableAdapter;
-    private DocumentToPrintableAdapter documentToPrintableAdapter;
-    private PrintReportToSendableAdapter printReportToSendableAdapter;
+    protected RouteToPricableAdapter routeToPricableAdapter;
+    protected BookingDetailToDocumentableAdapter bookingDetailToDocumentableAdapter;
+    protected DocumentToPrintableAdapter documentToPrintableAdapter;
+    protected PrintReportToSendableAdapter printReportToSendableAdapter;
 
     private String logLine;
 
