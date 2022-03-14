@@ -27,8 +27,7 @@ public class MessagingServiceImpl implements MessagingService {
         sender = messageType == MessageType.SMS ? "0152242069" : "ticket@automat.de";
 
         if (messageType != null) {
-            DeliveryReport deliveryReport = sendingMessage(sendable);
-            return deliveryReport;
+            return sendingMessage(sendable);
         } else {
             return null;
         }

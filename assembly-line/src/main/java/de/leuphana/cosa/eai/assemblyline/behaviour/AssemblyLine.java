@@ -97,16 +97,6 @@ public class AssemblyLine {
                         .end()
                         ;
 
-//                from("direct:aggregateBookingDetails")
-//                        .aggregate(constant(true), bookingDetailToDocumentableAdapter)
-//                            .completionSize(1)
-//                        .log(body().toString())
-//                        .choice()
-//                            .when(body().isNull())
-//                                .to("direct:createDocument")
-//                        .end()
-//                        ;
-
                 from("direct:getPrice")
                         // (PIPELINE)
                         .bean(routeToPricableAdapter, "onRouteCreated")

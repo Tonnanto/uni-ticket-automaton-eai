@@ -7,7 +7,7 @@ import de.leuphana.cosa.eai.printingsystem.structure.Printable;
 import java.util.List;
 
 public class DocumentToPrintableAdapter {
-    PrintingService printingService;
+    final PrintingService printingService;
 
     public DocumentToPrintableAdapter(PrintingService printingService) {
         this.printingService = printingService;

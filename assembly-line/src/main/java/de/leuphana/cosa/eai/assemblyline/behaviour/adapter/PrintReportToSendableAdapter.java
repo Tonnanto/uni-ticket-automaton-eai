@@ -5,7 +5,7 @@ import de.leuphana.cosa.eai.messagingsystem.behaviour.service.MessagingService;
 import de.leuphana.cosa.eai.messagingsystem.structure.Sendable;
 
 public class PrintReportToSendableAdapter {
-    MessagingService messagingService;
+    final MessagingService messagingService;
     private TicketDocumentTemplate ticketDocument;
 
     public PrintReportToSendableAdapter(MessagingService messagingService) {

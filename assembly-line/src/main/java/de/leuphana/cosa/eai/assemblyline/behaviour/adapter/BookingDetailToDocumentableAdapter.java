@@ -12,36 +12,13 @@ import java.util.UUID;
 
 public class BookingDetailToDocumentableAdapter {
 
-    DocumentService documentService;
+    final DocumentService documentService;
     private Price price;
     private Route route;
 
     public BookingDetailToDocumentableAdapter(DocumentService documentService) {
         this.documentService = documentService;
     }
-
-//    @Override
-//    public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-//        System.out.println("AGGREGATE");
-//
-//        if (newExchange.getIn().getBody() instanceof Route route) {
-//            System.out.println("Setting Route");
-//            this.route = route;
-//        }
-//
-//        if (newExchange.getIn().getBody() instanceof Price price) {
-//            System.out.println("Setting Price");
-//            this.price = price;
-//        }
-//
-//        Documentable body = createDocumentable();
-//        newExchange.getIn().setBody(body);
-//        if (body != null) {
-//            System.out.println("Documentable: " + body);
-//            newExchange.setProperty(Exchange.AGGREGATION_COMPLETE_CURRENT_GROUP, true);
-//        }
-//        return newExchange;
-//    }
 
     public Documentable onRouteCreated(Route route) {
         this.route = route;

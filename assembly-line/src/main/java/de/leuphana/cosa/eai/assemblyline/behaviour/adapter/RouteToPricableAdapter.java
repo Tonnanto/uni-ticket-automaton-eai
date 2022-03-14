@@ -5,7 +5,7 @@ import de.leuphana.cosa.eai.pricingsystem.structure.Pricable;
 import de.leuphana.cosa.eai.routesystem.structure.Route;
 
 public class RouteToPricableAdapter {
-    PricingService pricingService;
+    final PricingService pricingService;
 
     public RouteToPricableAdapter(PricingService pricingService) {
         this.pricingService = pricingService;
